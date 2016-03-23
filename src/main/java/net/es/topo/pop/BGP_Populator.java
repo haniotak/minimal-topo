@@ -3,15 +3,14 @@ package net.es.topo.pop;
 import lombok.extern.slf4j.Slf4j;
 import net.es.topo.dao.TopologyRepository;
 import net.es.topo.ent.TopoEdge;
+import net.es.topo.ent.TopoInfo;
 import net.es.topo.ent.TopoVertex;
 import net.es.topo.ent.Topology;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 @Component
 @Slf4j
@@ -24,52 +23,67 @@ public class BGP_Populator {
         List<Topology> topos = topoRepo.findAll();
 
         if (topos.isEmpty()) {
+            Map<String, Topology> topologies = new HashMap<>();
 
-            Topology canonical = Topology.builder()
-                    .name("bgp-canonical")
-                    .layer("BGP")
-                    .edges(new HashSet<>())
-                    .vertices(new HashSet<>())
-                    .build();
-
-            Topology actual = Topology.builder()
-                    .name("bgp-actual")
-                    .layer("BGP")
-                    .edges(new HashSet<>())
-                    .vertices(new HashSet<>())
-                    .build();
+            String[] bgp_names = {"canonical", "actual"};
+            String[] device_names = {"alpha", "bravo", "charlie", "delta"};
 
 
-            String[] names = {"alpha", "bravo", "charlie", "delta"};
+            Arrays.asList(bgp_names).stream().forEach(bgp_name -> {
+                Topology topo = Topology.builder()
+                        .name(bgp_name)
+                        .layer("BGP")
+                        .edges(new HashSet<>())
+                        .vertices(new HashSet<>())
+                        .info(new HashSet<>())
+                        .build();
 
-            Arrays.asList(names).stream().forEach(name_i -> {
-                TopoVertex cv = TopoVertex.builder().urn(name_i).build();
-                canonical.getVertices().add(cv);
 
-                TopoVertex av = TopoVertex.builder().urn(name_i).build();
-                actual.getVertices().add(av);
+                TopoInfo topology_info = TopoInfo.builder()
+                        .type("bgp-topo")
+                        .url("https://bgp.info.server/" + bgp_name)
+                        .build();
 
-                Arrays.asList(names).stream().filter(t -> !name_i.equals(t)).forEach(name_j -> {
-                    TopoEdge ce = TopoEdge.builder()
-                            .a(name_i)
-                            .z(name_j)
+                topo.getInfo().add(topology_info);
+                topologies.put(bgp_name, topo);
+
+                Arrays.asList(device_names).stream().forEach(dev_name_i -> {
+
+                    TopoVertex av = TopoVertex.builder()
+                            .urn(dev_name_i)
+                            .info(new HashSet<>())
                             .build();
+                    topo.getVertices().add(av);
 
-                    canonical.getEdges().add(ce);
+                    TopoInfo device_info = TopoInfo.builder()
+                            .type("device-info")
+                            .url("https://device.info.server/" + dev_name_i)
+                            .build();
+                    av.getInfo().add(device_info);
 
-                    if (!name_i.equals("bravo") && !name_j.equals("bravo")) {
-                        TopoEdge ae = TopoEdge.builder()
-                                .a(name_i)
-                                .z(name_j)
-                                .build();
-                        actual.getEdges().add(ae);
+                    Arrays.asList(device_names).stream()
+                            .filter(t -> !dev_name_i.equals(t))
+                            .forEach(dev_name_j -> {
+                                TopoEdge edge = TopoEdge.builder()
+                                        .type("bgp-peering")
+                                        .a(dev_name_i)
+                                        .z(dev_name_j)
+                                        .build();
 
-                    }
+                                if (bgp_name.equals("actual")) {
+                                    if (!dev_name_i.equals("bravo") && !dev_name_j.equals("bravo")) {
+                                        topo.getEdges().add(edge);
+                                    }
+                                } else {
+                                    topo.getEdges().add(edge);
+                                }
+                            });
                 });
-            });
-            topoRepo.save(canonical);
-            topoRepo.save(actual);
 
+            });
+
+
+            topoRepo.save(topologies.values());
 
         } else {
             log.info("topo db not empty");

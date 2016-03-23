@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 
 import javax.persistence.*;
+import java.util.List;
 import java.util.Set;
 
 @NoArgsConstructor
@@ -22,6 +23,8 @@ public class Topology {
 
     private String layer;
 
+    @OneToMany(cascade = CascadeType.ALL)
+    private Set<TopoInfo> info;
 
 
     @OneToMany(cascade = CascadeType.ALL)
