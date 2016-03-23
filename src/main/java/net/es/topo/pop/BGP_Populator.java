@@ -26,13 +26,14 @@ public class BGP_Populator {
             Map<String, Topology> topologies = new HashMap<>();
 
             String[] bgp_names = {"canonical", "actual"};
-            String[] device_names = {"alpha", "bravo", "charlie", "delta"};
+            String[] device_names = {"alpha", "bravo", "charlie"};
 
 
             Arrays.asList(bgp_names).stream().forEach(bgp_name -> {
                 Topology topo = Topology.builder()
                         .name(bgp_name)
                         .layer("BGP")
+                        .description("a BGP topology")
                         .edges(new HashSet<>())
                         .vertices(new HashSet<>())
                         .info(new HashSet<>())

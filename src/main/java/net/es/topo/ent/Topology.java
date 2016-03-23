@@ -21,6 +21,8 @@ public class Topology {
     @Column(unique = true)
     private String name;
 
+    private String description;
+
     private String layer;
 
     @OneToMany(cascade = CascadeType.ALL)
