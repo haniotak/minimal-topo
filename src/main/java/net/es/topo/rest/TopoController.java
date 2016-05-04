@@ -1,6 +1,10 @@
 package net.es.topo.rest;
 
 
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
+import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import net.es.topo.dao.TopologyRepository;
 import net.es.topo.dto.Converter;
@@ -11,6 +15,7 @@ import net.es.topo.ent.Topology;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.mapping.model.MappingException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -106,7 +111,15 @@ public class TopoController {
         return v4converter.convertToV4(v4topo);
     }
 
-
+    @RequestMapping(value = "/topology-v4-schema", method = RequestMethod.GET)
+    @ResponseBody
+    public JsonSchema  getV4Schema() throws JsonMappingException {
+        ObjectMapper m = new ObjectMapper();
+        SchemaFactoryWrapper visitor = new SchemaFactoryWrapper();
+        m.acceptJsonFormatVisitor(m.constructType(TopologyV4.class), visitor);
+        JsonSchema jsonSchema = visitor.finalSchema();
+        return jsonSchema;
+    }
 
     @RequestMapping(value = "/topologies/update", method = RequestMethod.POST)
     @ResponseBody

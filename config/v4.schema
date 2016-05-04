@@ -1,0 +1,60 @@
+{
+  "type": "object",
+  "id": "urn:jsonschema:net:es:topo:dto:TopologyV4",
+  "properties": {
+    "subnets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "id": "urn:jsonschema:net:es:topo:dto:SubnetV4",
+        "properties": {
+          "addresses": {
+            "type": "array",
+            "items": {
+              "$ref": "urn:jsonschema:net:es:topo:dto:AddressV4"
+            }
+          },
+          "base": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "routers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "id": "urn:jsonschema:net:es:topo:dto:RouterV4",
+        "properties": {
+          "urn": {
+            "type": "string"
+          },
+          "ifces": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "id": "urn:jsonschema:net:es:topo:dto:IfceV4",
+              "properties": {
+                "urn": {
+                  "type": "string"
+                },
+                "addresses": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "id": "urn:jsonschema:net:es:topo:dto:AddressV4",
+                    "properties": {
+                      "address": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
