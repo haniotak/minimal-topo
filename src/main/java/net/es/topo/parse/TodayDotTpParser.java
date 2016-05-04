@@ -3,6 +3,7 @@ package net.es.topo.parse;
 import lombok.extern.slf4j.Slf4j;
 import net.es.topo.dao.TopologyRepository;
 import net.es.topo.ent.TopoEdge;
+import net.es.topo.ent.TopoInfo;
 import net.es.topo.ent.TopoVertex;
 import net.es.topo.ent.Topology;
 import net.es.topo.prop.ImportProperties;
@@ -31,6 +32,7 @@ public class TodayDotTpParser {
     private final String BASE = "BASE";
     private final String ADDR = "ADDR";
     private final String MASK = "MASK";
+    private final String ALIAS = "ALIAS";
 
 
     @PostConstruct
@@ -73,16 +75,21 @@ public class TodayDotTpParser {
             ifces.stream().forEach(i -> {
                 String ifce_urn = r+"::"+i;
 
-                TopoVertex ifce_vertex = TopoVertex.builder().urn(ifce_urn).type("IFCE").build();
-                topology.getVertices().add(ifce_vertex);
-
-
-
-                Map ipv4net = collectIpv4Net(lines, r, i);
+                Map<String, String> ipv4net = collectIpv4Net(lines, r, i);
                 String addr = ipv4net.get(ADDR)+"/"+ipv4net.get(MASK);
                 String subnet = ipv4net.get(BASE)+"/"+ipv4net.get(MASK);
+                String alias = ipv4net.get(ALIAS);
+
                 addrs.add(addr);
                 subnets.add(subnet);
+
+
+                TopoVertex ifce_vertex = TopoVertex.builder().urn(ifce_urn).type("IFCE").info(new HashSet<>()).build();
+                topology.getVertices().add(ifce_vertex);
+
+                TopoInfo aliasInfo = TopoInfo.builder().type("IFCE_ALIAS").data(alias).build();
+                ifce_vertex.getInfo().add(aliasInfo);
+
 
                 String addr_urn = addr;
                 String subnet_urn = subnet;
@@ -132,6 +139,9 @@ public class TodayDotTpParser {
         String mask = null;
         String addr = null;
 
+        String tentative_alias = null;
+        String alias = null;
+
         Map<String, String> result = new HashMap<>();
         for (String line : lines) {
             // these are all the ipv4net lines for the router
@@ -139,15 +149,24 @@ public class TodayDotTpParser {
                 String[] parts = line.split(SEP_RE);
 
                 if (base == null) {
+                    // keep the last alias
+                    if (line.startsWith("ipv4net"+SEP) && line.contains(SEP+"alias"+SEP)) {
+                        assert parts.length == 5;
+                        tentative_alias = parts[4];
+                    }
                     if (line.contains(SEP + "int_name" + SEP + ifce)) {
                         assert parts.length == 5;
                         base = parts[1];
+                        alias = tentative_alias;
                     }
-                } else if (mask == null) {
-                    if (line.startsWith("ipv4net"+SEP+base+SEP+router) && line.contains(SEP+"mask"+SEP)) {
-                        assert parts.length == 7;
-                        mask = parts[6];
-                        addr = parts[4];
+                } else {
+
+                    if (mask == null) {
+                        if (line.startsWith("ipv4net"+SEP+base+SEP+router) && line.contains(SEP+"mask"+SEP)) {
+                            assert parts.length == 7;
+                            mask = parts[6];
+                            addr = parts[4];
+                        }
                     }
                 }
 
@@ -157,6 +176,7 @@ public class TodayDotTpParser {
         result.put(BASE, base);
         result.put(MASK, mask);
         result.put(ADDR, addr);
+        result.put(ALIAS, alias);
         return result;
     }
 

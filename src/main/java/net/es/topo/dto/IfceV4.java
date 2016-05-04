@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Map;
 import java.util.Set;
 
 @AllArgsConstructor
@@ -15,5 +16,7 @@ public class IfceV4 {
     private String urn;
 
     private Set<AddressV4> addresses;
+
+    private Map<String, Object> arbitraryData;
 
 }
