@@ -65,7 +65,7 @@ public class TodayDotTpParser {
         routers.stream().forEach(r -> {
             String router_urn = r;
 
-            TopoVertex router_vertex = TopoVertex.builder().urn(router_urn).build();
+            TopoVertex router_vertex = TopoVertex.builder().urn(router_urn).type("ROUTER").build();
             topology.getVertices().add(router_vertex);
 
             List<String> ifces = collectIfces(lines, r);
@@ -73,7 +73,7 @@ public class TodayDotTpParser {
             ifces.stream().forEach(i -> {
                 String ifce_urn = r+"::"+i;
 
-                TopoVertex ifce_vertex = TopoVertex.builder().urn(ifce_urn).build();
+                TopoVertex ifce_vertex = TopoVertex.builder().urn(ifce_urn).type("IFCE").build();
                 topology.getVertices().add(ifce_vertex);
 
 
@@ -87,8 +87,8 @@ public class TodayDotTpParser {
                 String addr_urn = addr;
                 String subnet_urn = subnet;
 
-                TopoVertex addr_vertex = TopoVertex.builder().urn(addr_urn).build();
-                TopoVertex subnet_vertex = TopoVertex.builder().urn(subnet_urn).build();
+                TopoVertex addr_vertex = TopoVertex.builder().urn(addr_urn).type("ADDR").build();
+                TopoVertex subnet_vertex = TopoVertex.builder().urn(subnet_urn).type("SUBNET").build();
 
                 topology.getVertices().add(addr_vertex);
                 topology.getVertices().add(subnet_vertex);

@@ -22,6 +22,8 @@ public class TopoVertex {
 
     private String urn;
 
+    private String type;
+
     @OneToMany(cascade = CascadeType.ALL)
     private Set<TopoInfo> info;
 
