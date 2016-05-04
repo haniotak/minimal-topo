@@ -6,9 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -23,4 +21,8 @@ public class TopoInfo {
 
     private String type;
     private String url;
+
+    @Lob
+    @Column(length = 65535)
+    private String data;
 }
