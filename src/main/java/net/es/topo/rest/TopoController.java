@@ -3,6 +3,8 @@ package net.es.topo.rest;
 
 import lombok.extern.slf4j.Slf4j;
 import net.es.topo.dao.TopologyRepository;
+import net.es.topo.dto.Converter;
+import net.es.topo.dto.TopologyV4;
 import net.es.topo.ent.TopoInfo;
 import net.es.topo.ent.TopoVertex;
 import net.es.topo.ent.Topology;
@@ -24,6 +26,10 @@ import java.util.stream.Collectors;
 public class TopoController {
     @Autowired
     private TopologyRepository topoRepo;
+
+    @Autowired
+    private Converter v4converter;
+
 
     @ExceptionHandler(NoSuchElementException.class)
     @ResponseStatus(value = HttpStatus.NOT_FOUND)
@@ -92,6 +98,16 @@ public class TopoController {
         return topoRepo.findByName(name).orElseThrow(NoSuchElementException::new);
     }
 
+    @RequestMapping(value = "/topology-v4", method = RequestMethod.GET)
+    @ResponseBody
+    public TopologyV4 getV4Topology() {
+        log.info("retrieving v4 topology");
+        Topology v4topo = topoRepo.findByName("ESnetV4").orElseThrow(NoSuchElementException::new);
+        return v4converter.convertToV4(v4topo);
+    }
+
+
+
     @RequestMapping(value = "/topologies/update", method = RequestMethod.POST)
     @ResponseBody
     public Topology update(@RequestBody Topology inTopo) {
@@ -104,4 +120,7 @@ public class TopoController {
         inTopo = topoRepo.save(inTopo);
         return inTopo;
     }
+
+
+
 }
